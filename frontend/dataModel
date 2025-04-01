@@ -1,0 +1,319 @@
+// MongoDB Schema for Course
+const mongoose = require('mongoose');
+
+const lessonSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  videoUrl: {
+    type: String,
+    trim: true
+  },
+  duration: {
+    type: Number, // in minutes
+  },
+  order: {
+    type: Number,
+    required: true
+  },
+  materials: [{
+    title: String,
+    fileUrl: String,
+    fileType: String
+  }],
+  isPublished: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const moduleSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  order: {
+    type: Number,
+    required: true
+  },
+  lessons: [lessonSchema]
+});
+
+const courseSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  subtitle: {
+    type: String,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  instructor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  thumbnail: {
+    type: String,
+    trim: true
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  discountPrice: {
+    type: Number,
+    min: 0
+  },
+  category: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }],
+  level: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'],
+    default: 'All Levels'
+  },
+  whatYouWillLearn: [{
+    type: String,
+    trim: true
+  }],
+  prerequisites: [{
+    type: String,
+    trim: true
+  }],
+  modules: [moduleSchema],
+  totalDuration: {
+    type: Number,
+    default: 0
+  },
+  enrollmentCount: {
+    type: Number,
+    default: 0
+  },
+  ratings: {
+    average: {
+      type: Number,
+      default: 0
+    },
+    count: {
+      type: Number,
+      default: 0
+    }
+  },
+  isPublished: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Pre-save hook to update course totalDuration
+courseSchema.pre('save', function(next) {
+  let totalMinutes = 0;
+  this.modules.forEach(module => {
+    module.lessons.forEach(lesson => {
+      totalMinutes += lesson.duration || 0;
+    });
+  });
+  this.totalDuration = totalMinutes;
+  this.updatedAt = Date.now();
+  next();
+});
+
+const Course = mongoose.model('Course', courseSchema);
+
+module.exports = Course;
+
+// API Routes for Course Management
+const express = require('express');
+const router = express.Router();
+const Course = require('../models/Course');
+const auth = require('../middleware/auth');
+const instructorAuth = require('../middleware/instructorAuth');
+
+// Create a new course
+router.post('/', auth, instructorAuth, async (req, res) => {
+  try {
+    const course = new Course({
+      ...req.body,
+      instructor: req.user.id
+    });
+    await course.save();
+    res.status(201).send(course);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+});
+
+// Get all courses for an instructor
+router.get('/instructor', auth, instructorAuth, async (req, res) => {
+  try {
+    const courses = await Course.find({ instructor: req.user.id });
+    res.send(courses);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+// Get a specific course by ID
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const course = await Course.findOne({ 
+      _id: req.params.id,
+      instructor: req.user.id 
+    });
+    
+    if (!course) {
+      return res.status(404).send({ error: 'Course not found' });
+    }
+    
+    res.send(course);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+// Update a course
+router.patch('/:id', auth, instructorAuth, async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ['title', 'subtitle', 'description', 'price', 'discountPrice', 
+                          'category', 'tags', 'level', 'whatYouWillLearn', 
+                          'prerequisites', 'thumbnail', 'isPublished'];
+  
+  const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+  
+  if (!isValidOperation) {
+    return res.status(400).send({ error: 'Invalid updates!' });
+  }
+  
+  try {
+    const course = await Course.findOne({ 
+      _id: req.params.id,
+      instructor: req.user.id 
+    });
+    
+    if (!course) {
+      return res.status(404).send({ error: 'Course not found' });
+    }
+    
+    updates.forEach(update => course[update] = req.body[update]);
+    await course.save();
+    
+    res.send(course);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+});
+
+// Add a module to a course
+router.post('/:id/modules', auth, instructorAuth, async (req, res) => {
+  try {
+    const course = await Course.findOne({ 
+      _id: req.params.id,
+      instructor: req.user.id 
+    });
+    
+    if (!course) {
+      return res.status(404).send({ error: 'Course not found' });
+    }
+    
+    // Calculate next module order
+    const order = course.modules.length > 0 ? 
+      Math.max(...course.modules.map(m => m.order)) + 1 : 1;
+    
+    course.modules.push({
+      ...req.body,
+      order
+    });
+    
+    await course.save();
+    res.status(201).send(course);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+});
+
+// Add a lesson to a module
+router.post('/:courseId/modules/:moduleId/lessons', auth, instructorAuth, async (req, res) => {
+  try {
+    const course = await Course.findOne({ 
+      _id: req.params.courseId,
+      instructor: req.user.id 
+    });
+    
+    if (!course) {
+      return res.status(404).send({ error: 'Course not found' });
+    }
+    
+    const module = course.modules.id(req.params.moduleId);
+    
+    if (!module) {
+      return res.status(404).send({ error: 'Module not found' });
+    }
+    
+    // Calculate next lesson order
+    const order = module.lessons.length > 0 ? 
+      Math.max(...module.lessons.map(l => l.order)) + 1 : 1;
+    
+    module.lessons.push({
+      ...req.body,
+      order
+    });
+    
+    await course.save();
+    res.status(201).send(course);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+});
+
+// Delete a course
+router.delete('/:id', auth, instructorAuth, async (req, res) => {
+  try {
+    const course = await Course.findOneAndDelete({ 
+      _id: req.params.id,
+      instructor: req.user.id 
+    });
+    
+    if (!course) {
+      return res.status(404).send({ error: 'Course not found' });
+    }
+    
+    res.send(course);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+module.exports = router;

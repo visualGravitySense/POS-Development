@@ -116,7 +116,7 @@
             }
           }
         ],
-        "currentTab": 6
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -190,7 +190,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "Define Project Requirements.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -200,7 +200,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks for Define Project Requirements"
             }
           },
           {
@@ -209,12 +209,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README.md",
+                "file": "Define Project Requirements.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README"
+              "title": "Outgoing links from Define Project Requirements"
             }
           },
           {
@@ -238,13 +238,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md",
+                "file": "Define Project Requirements.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline of Define Project Requirements"
             }
           }
         ]
@@ -265,11 +265,22 @@
       "obsidian-importer:Open Importer": false
     }
   },
-  "active": "f8902d8697f38028",
+  "active": "68cc660fdf9c217a",
   "lastOpenFiles": [
+    "frontend/dataModel",
+    "frontend/components/courses/dataModel",
+    "frontend/components/courses/CourseBuilder.jsx",
+    "frontend/components/courses/ModuleEditor.jsx",
+    "frontend/components/courses/CourseForm.jsx",
+    "frontend/components/courses/CoursesList.jsx",
+    "frontend/components/courses/CourseCard.jsx",
+    "frontend/components/courses",
+    "frontend/components/CoursesList.jsx",
+    "frontend/components/CourseCard.jsx",
+    "frontend/components",
+    "Start with user stories.md",
     "README.md",
     "Define Project Requirements.md",
-    "Start with user stories.md",
     "Test Project.md",
     "Step-by-Step Online Courses POS Development Plan.md",
     "POS Development Plan.md",

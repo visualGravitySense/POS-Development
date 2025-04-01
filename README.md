@@ -79,7 +79,7 @@ We're following a lean development methodology:
 
 ## 💬 Contributing
 
-This project is currently in private development. If you're interested in contributing or partnering, please contact us at [your-email@example.com].
+This project is currently in private development. If you're interested in contributing or partnering, please contact us at [dmitri.gornakov@gmail.com].
 
 ## 📜 License
 
