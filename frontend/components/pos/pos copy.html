@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Recommendation Engine Interface</title>
+  <style>
+    :root {
+      --color-primary: #4a6cfa;
+      --color-primary-light: #eef1ff;
+      --color-text: #303030;
+      --color-text-light: #606060;
+      --color-border: #e0e0e0;
+      --color-background: #f8f9fa;
+      --color-surface: #ffffff;
+      --color-accent: #ffc107;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-background);
+      color: var(--color-text);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0;
+    }
+    
+    .pos-interface {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      height: 100vh;
+    }
+    
+    .checkout-panel {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .checkout-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .checkout-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      margin: 1rem 0;
+    }
+    
+    .cart-item {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1fr;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    
+    .item-name {
+      font-weight: 500;
+    }
+    
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .quantity-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .checkout-summary {
+      background-color: var(--color-primary-light);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 1.25rem;
+      padding-top: 0.5rem;
+      margin-top: 0.5rem;
+      border-top: 1px solid var(--color-border);
+    }
+    
+    .checkout-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--color-border);
+    }
+    
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3a5bd9;
+    }
+    
+    /* Recommendation Panel */
+    .recommendations-panel {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .recommendations-header {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .recommendations-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 0;
+      color: var(--color-primary);
+    }
+    
+    .recommendation-subtitle {
+      font-size: 0.875rem;
+      color: var(--color-text-light);
+      margin: 0.25rem 0 0;
+    }
+    
+    .recommendation-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+      overflow-y: auto;
+    }
+    
+    .recommendation-card {
+      display: flex;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    
+    .recommendation-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .recommendation-image {
+      width: 80px;
+      height: 80px;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .recommendation-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    .recommendation-details {
+      flex: 1;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .recommendation-name {
+      font-weight: 500;
+      margin: 0 0 0.25rem;
+    }
+    
+    .recommendation-compatibility {
+      font-size: 0.75rem;
+      color: var(--color-text-light);
+      margin: 0;
+    }
+    
+    .recommendation-price {
+      margin-top: auto;
+      font-weight: 600;
+    }
+    
+    .recommendation-actions {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+    }
+    
+    .add-to-cart-btn {
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+    
+    .add-to-cart-btn:hover {
+      background: #3a5bd9;
+    }
+    
+    .discount-badge {
+      background: var(--color-accent);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      margin-left: 0.5rem;
+    }
+    
+    .category-recommendations {
+      margin-top: 1.5rem;
+    }
+    
+    .category-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin: 0 0 0.5rem;
+      color: var(--color-text-light);
+    }
+    
+    .category-items {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      padding: 0.25rem 0;
+    }
+    
+    .category-item {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem;
+      width: 80px;
+      text-align: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .category-item:hover {
+      border-color: var(--color-primary);
+    }
+    
+    .category-item-image {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 0.25rem;
+      background: #f0f0f0;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .category-item-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .recommendation-algorithm {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+      font-size: 0.75rem;
+      color: var(--color-text-light);
+    }
+    
+    .algo-slider {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    
+    .algo-label {
+      font-size: 0.75rem;
+      flex: 1;
+    }
+    
+    input[type="range"] {
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+      <!-- Background -->
+      <rect width="800" height="400" fill="#f8f9fa" />
+      
+      <!-- Boxes -->
+      <rect x="50" y="150" width="120" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" />
+      <rect x="250" y="50" width="120" height="80" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" />
+      <rect x="250" y="150" width="120" height="80" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" />
+      <rect x="250" y="250" width="120" height="80" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" />
+      <rect x="450" y="150" width="120" height="80" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="2" />
+      <rect x="650" y="150" width="120" height="80" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2" />
+      
+      <!-- Text -->
+      <text x="110" y="190" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Home</text>
+      <text x="310" y="90" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Create Quiz</text>
+      <text x="310" y="190" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Browse Quizzes</text>
+      <text x="310" y="290" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">My Profile</text>
+      <text x="510" y="190" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Take Quiz</text>
+      <text x="710" y="190" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Results</text>
+      
+      <!-- Lines -->
+      <line x1="170" y1="190" x2="250" y2="90" stroke="#666" stroke-width="2" />
+      <line x1="170" y1="190" x2="250" y2="190" stroke="#666" stroke-width="2" />
+      <line x1="170" y1="190" x2="250" y2="290" stroke="#666" stroke-width="2" />
+      <line x1="370" y1="190" x2="450" y2="190" stroke="#666" stroke-width="2" />
+      <line x1="570" y1="190" x2="650" y2="190" stroke="#666" stroke-width="2" />
+      
+      <!-- Arrows -->
+      <polygon points="245,90 250,90 247.5,85" fill="#666" />
+      <polygon points="245,190 250,190 247.5,185" fill="#666" />
+      <polygon points="245,290 250,290 247.5,285" fill="#666" />
+      <polygon points="445,190 450,190 447.5,185" fill="#666" />
+      <polygon points="645,190 650,190 647.5,185" fill="#666" />
+    </svg>
+    <div class="pos-interface">
+      <!-- Left side: Checkout -->
+      <div class="checkout-panel">
+        <div class="checkout-header">
+          <h2 class="checkout-title">Checkout</h2>
+          <div>Transaction #T-3829</div>
+        </div>
+        
+        <div class="cart-items">
+          <div class="cart-item">
+            <div class="item-name">Smartphone XS Pro</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn">-</button>
+              <span>1</span>
+              <button class="quantity-btn">+</button>
+            </div>
+            <div>$799.99</div>
+            <div>$799.99</div>
+          </div>
+          
+          <div class="cart-item">
+            <div class="item-name">Premium Screen Protector</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn">-</button>
+              <span>1</span>
+              <button class="quantity-btn">+</button>
+            </div>
+            <div>$24.99</div>
+            <div>$24.99</div>
+          </div>
+        </div>
+        
+        <div class="checkout-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$824.98</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax (7.5%)</span>
+            <span>$61.87</span>
+          </div>
+          <div class="total-row">
+            <span>Total</span>
+            <span>$886.85</span>
+          </div>
+        </div>
+        
+        <div class="checkout-actions">
+          <button class="btn btn-outline">Hold</button>
+          <button class="btn btn-outline">Clear</button>
+          <button class="btn btn-primary">Payment</button>
+        </div>
+      </div>
+      
+      <!-- Right side: Recommendations -->
+      <div class="recommendations-panel">
+        <div class="recommendations-header">
+          <h3 class="recommendations-title">Recommended for this purchase</h3>
+          <p class="recommendation-subtitle">Based on current cart items</p>
+        </div>
+        
+        <div class="recommendation-cards">
+          <!-- Recommendation 1 -->
+          <div class="recommendation-card">
+            <div class="recommendation-image">
+              <img src="/api/placeholder/80/80" alt="Wireless Charger">
+            </div>
+            <div class="recommendation-details">
+              <h4 class="recommendation-name">Wireless Fast Charger</h4>
+              <p class="recommendation-compatibility">Compatible with Smartphone XS Pro</p>
+              <div class="recommendation-price">$39.99</div>
+            </div>
+            <div class="recommendation-actions">
+              <button class="add-to-cart-btn">+</button>
+            </div>
+          </div>
+          
+          <!-- Recommendation 2 -->
+          <div class="recommendation-card">
+            <div class="recommendation-image">
+              <img src="/api/placeholder/80/80" alt="Phone Case">
+            </div>
+            <div class="recommendation-details">
+              <h4 class="recommendation-name">Premium Protective Case</h4>
+              <p class="recommendation-compatibility">Compatible with Smartphone XS Pro</p>
+              <div class="recommendation-price">
+                $29.99
+                <span class="discount-badge">15% OFF</span>
+              </div>
+            </div>
+            <div class="recommendation-actions">
+              <button class="add-to-cart-btn">+</button>
+            </div>
+          </div>
+          
+          <!-- Recommendation 3 -->
+          <div class="recommendation-card">
+            <div class="recommendation-image">
+              <img src="/api/placeholder/80/80" alt="Earbuds">
+            </div>
+            <div class="recommendation-details">
+              <h4 class="recommendation-name">Wireless Earbuds</h4>
+              <p class="recommendation-compatibility">Frequently bought with this phone</p>
+              <div class="recommendation-price">$129.99</div>
+            </div>
+            <div class="recommendation-actions">
+              <button class="add-to-cart-btn">+</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Category specific recommendations -->
+        <div class="category-recommendations">
+          <h4 class="category-title">Accessories you might need</h4>
+          <div class="category-items">
+            <div class="category-item">
+              <div class="category-item-image">
+                <img src="/api/placeholder/40/40" alt="Car charger">
+              </div>
+              <div class="category-item-name">Car Charger</div>
+            </div>
+            <div class="category-item">
+              <div class="category-item-image">
+                <img src="/api/placeholder/40/40" alt="Power Bank">
+              </div>
+              <div class="category-item-name">Power Bank</div>
+            </div>
+            <div class="category-item">
+              <div class="category-item-image">
+                <img src="/api/placeholder/40/40" alt="Phone Grip">
+              </div>
+              <div class="category-item-name">Phone Grip</div>
+            </div>
+            <div class="category-item">
+              <div class="category-item-image">
+                <img src="/api/placeholder/40/40" alt="Bluetooth Speaker">
+              </div>
+              <div class="category-item-name">BT Speaker</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recommendation algorithm controls -->
+        <div class="recommendation-algorithm">
+          <div>Recommendation algorithm</div>
+          <div class="algo-slider">
+            <div class="algo-label">Popularity</div>
+            <input type="range" min="0" max="100" value="50">
+            <div class="algo-label">Personalized</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

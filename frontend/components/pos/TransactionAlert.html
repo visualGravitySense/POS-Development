@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Fraud Detection Interface</title>
+  <style>
+    :root {
+      --color-background: #f8f9fa;
+      --color-surface: #ffffff;
+      --color-primary: #1976d2;
+      --color-primary-dark: #0d47a1;
+      --color-text: #212121;
+      --color-text-secondary: #757575;
+      --color-border: #e0e0e0;
+      --color-success: #2e7d32;
+      --color-warning: #ff9800;
+      --color-danger: #d32f2f;
+      --color-success-light: #e8f5e9;
+      --color-warning-light: #fff3e0;
+      --color-danger-light: #ffebee;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-background);
+      color: var(--color-text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background-color: var(--color-primary);
+      color: white;
+      padding: 12px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .transaction-panel {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 24px;
+      position: relative;
+    }
+
+    .transaction-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .transaction-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .transaction-id {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+
+    .transaction-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .transaction-items {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .item-header {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1fr;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+      background-color: #f5f5f5;
+      font-weight: 500;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1fr;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
+    }
+
+    .transaction-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .summary-card {
+      background-color: #f5f7fa;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .summary-total {
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .fraud-indicator {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 20px;
+      gap: 12px;
+    }
+
+    .fraud-indicator.low-risk {
+      background-color: var(--color-success-light);
+      border-left: 4px solid var(--color-success);
+    }
+
+    .fraud-indicator.medium-risk {
+      background-color: var(--color-warning-light);
+      border-left: 4px solid var(--color-warning);
+    }
+
+    .fraud-indicator.high-risk {
+      background-color: var(--color-danger-light);
+      border-left: 4px solid var(--color-danger);
+    }
+
+    .risk-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: white;
+    }
+
+    .risk-badge.low {
+      background-color: var(--color-success);
+    }
+
+    .risk-badge.medium {
+      background-color: var(--color-warning);
+    }
+
+    .risk-badge.high {
+      background-color: var(--color-danger);
+    }
+
+    .risk-info {
+      flex: 1;
+    }
+
+    .risk-title {
+      font-weight: 500;
+      margin: 0 0 4px;
+    }
+
+    .risk-description {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-dark);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--color-border);
+    }
+
+    .btn-outline:hover {
+      background-color: #f5f5f5;
+    }
+
+    .btn-danger {
+      background-color: var(--color-danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #b71c1c;
+    }
+
+    .transaction-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .fraud-score-display {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .score-gauge {
+      width: 120px;
+      height: 120px;
+      border-radius: 60px;
+      background: conic-gradient(
+        var(--color-danger) 0% 80%,
+        #f5f5f5 80% 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .score-gauge::before {
+      content: "";
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50px;
+      background: white;
+    }
+
+    .score-value {
+      position: relative;
+      z-index: 1;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-danger);
+    }
+
+    .flags-list {
+      margin: 20px 0;
+    }
+
+    .flag-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .flag-icon {
+      color: var(--color-danger);
+      font-size: 1.25rem;
+    }
+
+    .flag-text {
+      flex: 1;
+    }
+
+    .history-summary {
+      background-color: #f5f7fa;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 20px 0;
+    }
+
+    .history-title {
+      font-weight: 500;
+      margin: 0 0 12px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.875rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* For screen readers */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>POS System - Transaction Processing</h1>
+  </div>
+
+  <div class="main-content">
+    <div class="transaction-panel">
+      <div class="transaction-header">
+        <div>
+          <h2 class="transaction-title">Current Transaction</h2>
+          <span class="transaction-id">#TRX-29384</span>
+        </div>
+        <div class="transaction-meta">
+          <span>04/02/2025 14:32</span>
+        </div>
+      </div>
+
+      <div class="transaction-content">
+        <div class="transaction-items">
+          <div class="item-header">
+            <div>Item</div>
+            <div>Quantity</div>
+            <div>Price</div>
+            <div>Total</div>
+          </div>
+          <div class="item-row">
+            <div>Premium Wireless Headphones</div>
+            <div>1</div>
+            <div>$299.99</div>
+            <div>$299.99</div>
+          </div>
+          <div class="item-row">
+            <div>Smartphone Case</div>
+            <div>2</div>
+            <div>$24.99</div>
+            <div>$49.98</div>
+          </div>
+          <div class="item-row">
+            <div>USB-C Cable 6ft</div>
+            <div>3</div>
+            <div>$12.99</div>
+            <div>$38.97</div>
+          </div>
+        </div>
+
+        <div class="transaction-summary">
+          <div class="summary-card">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>$388.94</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax (8.25%)</span>
+              <span>$32.09</span>
+            </div>
+            <div class="summary-total">
+              <span>Total</span>
+              <span>$421.03</span>
+            </div>
+          </div>
+
+          <div class="fraud-indicator high-risk">
+            <div class="risk-badge high">0.8</div>
+            <div class="risk-info">
+              <h3 class="risk-title">High Risk Transaction</h3>
+              <p class="risk-description">This transaction has been flagged for unusual activity.</p>
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-outline" id="view-report-btn">
+                View Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="transaction-actions">
+        <button class="btn btn-outline">Request ID</button>
+        <button class="btn btn-outline">Call Manager</button>
+        <button class="btn btn-danger">Cancel</button>
+        <button class="btn btn-primary">Process Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fraud Alert Modal -->
+  <div class="modal-overlay" id="fraud-modal">
+    <div class="modal" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-danger);">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Fraud Alert
+        </h2>
+        <button class="btn btn-outline" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="fraud-score-display">
+          <div class="score-gauge">
+            <span class="score-value">0.8</span>
+          </div>
+        </div>
+        
+        <div class="flags-list">
+          <div class="flag-item">
+            <span class="flag-icon">⚠️</span>
+            <div class="flag-text">
+              <strong>Unusually high transaction amount</strong>
+              <p>$421.03 vs. avg $72.50</p>
+            </div>
+          </div>
+          <div class="flag-item">
+            <span class="flag-icon">⚠️</span>
+            <div class="flag-text">
+              <strong>Multiple transactions in short time period</strong>
+              <p>3 transactions in 30 min</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="history-summary">
+          <h3 class="history-title">Customer Transaction History</h3>
+          <div class="history-item">
+            <span>Average Transaction:</span>
+            <span>$72.50</span>
+          </div>
+          <div class="history-item">
+            <span>Last Transaction:</span>
+            <span>5 minutes ago ($15.99)</span>
+          </div>
+          <div class="history-item">
+            <span>Usual Payment Method:</span>
+            <span>Credit Card ending 4583</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline">Cancel</button>
+        <button class="btn btn-outline">Request Authorization</button>
+        <button class="btn btn-primary">Verify ID</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple toggle for the modal in this demo
+    document.getElementById('view-report-btn').addEventListener('click', function() {
+      document.getElementById('fraud-modal').style.display = 'flex';
+    });
+    
+    // Close modal when clicking the close button or outside the modal
+    document.querySelector('.modal-header .btn-outline').addEventListener('click', function() {
+      document.getElementById('fraud-modal').style.display = 'none';
+    });
+    
+    document.querySelector('.modal-footer .btn-outline:first-child').addEventListener('click', function() {
+      document.getElementById('fraud-modal').style.display = 'none';
+    });
+    
+    // Close when clicking outside the modal
+    document.getElementById('fraud-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
